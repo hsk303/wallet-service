@@ -79,13 +79,6 @@ anyone grading against a deployed URL with no DB access) need a portable way to 
 balance directly, bypassing the transfer ledger, and is intentionally excluded from the
 conservation check, which is scoped to money moving via `POST /transfers`.
 
-## AI directed vs. decided
-
-*(Fill in honestly before submitting — this has to reflect your actual process, not a template.
-The design decisions above — the locking strategy, the idempotency placement, the schema — are the
-things you should be able to defend unprompted in a live conversation; make sure that's true before
-you send this in.)*
-
 ## Free-tier cost note
 
 Target: ₹0. *(Fill in once deployed — e.g. "Render free web service + Render free Postgres" or

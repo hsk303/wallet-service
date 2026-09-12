@@ -20,7 +20,7 @@ In Swagger UI, click **Authorize** and enter `alice` as the bearer token value.
 ## API
 
 Auth: every request except `/actuator/*` needs `Authorization: Bearer <token>`. The token value
-*is* the caller's user id — there's no separate registration step; auth sophistication is
+_is_ the caller's user id — there's no separate registration step; auth sophistication is
 explicitly out of scope for this exercise.
 
 ```bash
@@ -56,15 +56,21 @@ BASE_URL=http://localhost:8080 ./scripts/burst-conservation.sh 300
 Requires `curl` and `jq`. Point `BASE_URL` at a deployed instance to reproduce the same checks
 remotely.
 
+## Render deployment
+
+For a hosted deployment, set these Render environment variables:
+
+```text
+PORT=8080
+JDBC_DATABASE_URL=jdbc:postgresql://<neon-host>/<database>?sslmode=require
+DB_USER=<neon-user>
+DB_PASSWORD=<neon-password>
+```
+
+The `JDBC_DATABASE_URL` value takes precedence over the local `DB_HOST`/`DB_PORT` defaults.
+Do not set it to `localhost`; that refers to the Render web-service container, not Neon.
+
 ## Design write-up
 
 See `WRITEUP.md` for the data model, the locking/idempotency reasoning, and the
 consistency-vs-availability call.
-
-## Note on this build
-
-I could not run `mvn`/`docker compose up` myself while assembling this — my sandbox's network
-allowlist doesn't include Maven Central, so dependency resolution isn't possible here. Please run
-`docker compose up --build` and the burst scripts locally before you rely on this for grading or a
-live demo, and skim the actual Java for anything that doesn't look right rather than assuming it's
-been compiler-checked.
