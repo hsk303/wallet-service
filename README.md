@@ -74,3 +74,8 @@ Do not set it to `localhost`; that refers to the Render web-service container, n
 
 See `WRITEUP.md` for the data model, the locking/idempotency reasoning, and the
 consistency-vs-availability call.
+
+## Operations runbook
+
+See [RUNBOOK.md](RUNBOOK.md) for local startup, live Render deployment, API usage,
+grading bursts, observability, and troubleshooting.
