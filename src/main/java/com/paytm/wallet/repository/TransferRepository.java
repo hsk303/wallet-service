@@ -38,17 +38,22 @@ public class TransferRepository {
      */
     public boolean tryInsertPending(UUID id, String idempotencyKey, UUID fromWalletId, UUID toWalletId,
                                      long amountPaise, String requestHash) {
+        return tryInsertPending(id, idempotencyKey, fromWalletId, toWalletId, amountPaise, requestHash, null);
+    }
+
+    public boolean tryInsertPending(UUID id, String idempotencyKey, UUID fromWalletId, UUID toWalletId,
+                                     long amountPaise, String requestHash, UUID reversalOf) {
         int rows = jdbc.update(
-                "INSERT INTO transfers (id, idempotency_key, from_wallet_id, to_wallet_id, amount_paise, request_hash, status) " +
-                        "VALUES (?, ?, ?, ?, ?, ?, 'PENDING') ON CONFLICT (idempotency_key) DO NOTHING",
-                id, idempotencyKey, fromWalletId, toWalletId, amountPaise, requestHash
+                "INSERT INTO transfers (id, idempotency_key, from_wallet_id, to_wallet_id, amount_paise, request_hash, reversal_of, status) " +
+                        "VALUES (?, ?, ?, ?, ?, ?, ?, 'PENDING') ON CONFLICT (idempotency_key) DO NOTHING",
+                id, idempotencyKey, fromWalletId, toWalletId, amountPaise, requestHash, reversalOf
         );
         return rows > 0;
     }
 
     public Optional<Transfer> findByIdempotencyKey(String idempotencyKey) {
         List<Transfer> results = jdbc.query(
-                "SELECT id, idempotency_key, from_wallet_id, to_wallet_id, amount_paise, request_hash, status, created_at " +
+                "SELECT id, idempotency_key, from_wallet_id, to_wallet_id, amount_paise, request_hash, reversal_of, status, created_at " +
                         "FROM transfers WHERE idempotency_key = ?",
                 this::mapRow, idempotencyKey
         );
@@ -57,7 +62,7 @@ public class TransferRepository {
 
     public Optional<Transfer> findById(UUID id) {
         List<Transfer> results = jdbc.query(
-                "SELECT id, idempotency_key, from_wallet_id, to_wallet_id, amount_paise, request_hash, status, created_at " +
+                "SELECT id, idempotency_key, from_wallet_id, to_wallet_id, amount_paise, request_hash, reversal_of, status, created_at " +
                         "FROM transfers WHERE id = ?",
                 this::mapRow, id
         );
@@ -68,6 +73,13 @@ public class TransferRepository {
         jdbc.update("UPDATE transfers SET status = ? WHERE id = ?", status, id);
     }
 
+        public boolean hasReversal(UUID transferId) {
+                Integer count = jdbc.queryForObject(
+                                "SELECT COUNT(*) FROM transfers WHERE reversal_of = ?",
+                                Integer.class, transferId);
+                return count != null && count > 0;
+        }
+
     private Transfer mapRow(ResultSet rs, int rowNum) throws SQLException {
         return new Transfer(
                 UUID.fromString(rs.getString("id")),
@@ -76,6 +88,7 @@ public class TransferRepository {
                 UUID.fromString(rs.getString("to_wallet_id")),
                 rs.getLong("amount_paise"),
                 rs.getString("request_hash"),
+                rs.getObject("reversal_of", UUID.class),
                 rs.getString("status"),
                 rs.getTimestamp("created_at").toInstant()
         );

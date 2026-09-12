@@ -102,6 +102,16 @@ curl -sS http://localhost:8080/transfers/<transfer-id> \
   -H 'Authorization: Bearer alice'
 ```
 
+Reverse a completed transfer. The recipient is debited and the original sender is credited;
+the reversal has its own idempotency key:
+
+```bash
+curl -sS -X POST http://localhost:8080/transfers/<transfer-id>/reverse \
+  -H 'Authorization: Bearer alice' \
+  -H 'Content-Type: application/json' \
+  -d '{"idempotency_key":"reverse-key-1"}'
+```
+
 All amounts are integer paise. The seed endpoint is a test utility and is not a production
 deposit API.
 
@@ -159,6 +169,7 @@ export BASE_URL='https://wallet-service-1-y041.onrender.com'
 BASE_URL="$BASE_URL" ./scripts/burst-get-or-create.sh 50
 BASE_URL="$BASE_URL" ./scripts/burst-idempotent-retry.sh 30
 BASE_URL="$BASE_URL" ./scripts/burst-conservation.sh 300
+BASE_URL="$BASE_URL" ./scripts/burst-reversal.sh 2
 ```
 
 Expected results:

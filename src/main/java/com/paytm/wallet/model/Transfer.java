@@ -10,17 +10,19 @@ public class Transfer {
     private final UUID toWalletId;
     private final long amountPaise;
     private final String requestHash;
+    private final UUID reversalOf;
     private final String status;
     private final Instant createdAt;
 
     public Transfer(UUID id, String idempotencyKey, UUID fromWalletId, UUID toWalletId,
-                     long amountPaise, String requestHash, String status, Instant createdAt) {
+                     long amountPaise, String requestHash, UUID reversalOf, String status, Instant createdAt) {
         this.id = id;
         this.idempotencyKey = idempotencyKey;
         this.fromWalletId = fromWalletId;
         this.toWalletId = toWalletId;
         this.amountPaise = amountPaise;
         this.requestHash = requestHash;
+        this.reversalOf = reversalOf;
         this.status = status;
         this.createdAt = createdAt;
     }
@@ -47,6 +49,10 @@ public class Transfer {
 
     public String getRequestHash() {
         return requestHash;
+    }
+
+    public UUID getReversalOf() {
+        return reversalOf;
     }
 
     public String getStatus() {

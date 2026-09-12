@@ -32,11 +32,11 @@ Rejected alternatives:
   app-level retry loop, and it's easier to reason about because the failure mode ("waits for the
   lock") is simpler than "runs concurrently, might get retroactively aborted."
 - **Atomic conditional `UPDATE ... WHERE balance >= amount`** as the sole mechanism — attractive
-  because it needs no explicit `FOR UPDATE` syntax, but a transfer touches *two* rows (a debit and
+  because it needs no explicit `FOR UPDATE` syntax, but a transfer touches _two_ rows (a debit and
   a credit), and those are still two separate `UPDATE` statements each taking their own row lock.
   Getting deadlock-avoidance right then means reasoning per-direction about which statement runs
   first — e.g. if the credit target happens to have the lower wallet id, doing an unconditional
-  credit before confirming the debit succeeds is *not* obviously wrong, but it's the kind of thing
+  credit before confirming the debit succeeds is _not_ obviously wrong, but it's the kind of thing
   that's easy to get backwards under a hurried implementation. Locking both rows up front, sorted,
   removes that reasoning entirely: by the time either row is written, both locks are already held in
   a globally consistent order, and the balance check is just an `if`.
@@ -49,7 +49,7 @@ first. Neither can be holding one lock while waiting on the other, so there is n
 ## Where idempotency lives
 
 The uniqueness of `idempotency_key` is enforced by a DB unique constraint, and the claiming
-`INSERT ... ON CONFLICT (idempotency_key) DO NOTHING` runs inside the *same transaction* as the
+`INSERT ... ON CONFLICT (idempotency_key) DO NOTHING` runs inside the _same transaction_ as the
 debit/credit — not before it, not in a separate check. The two wallet locks are acquired first,
 so the transfer foreign-key checks cannot introduce a different lock order under contention. This
 matters because Postgres's
@@ -79,7 +79,26 @@ anyone grading against a deployed URL with no DB access) need a portable way to 
 balance directly, bypassing the transfer ledger, and is intentionally excluded from the
 conservation check, which is scoped to money moving via `POST /transfers`.
 
+## Reversal / refund
+
+`POST /transfers/{id}/reverse` creates a second transfer from the original recipient back
+to the original sender for the exact original amount. It reuses the same sorted row-lock and
+conditional balance-check logic, so a recipient who has already spent the funds receives a
+clean `DECLINED_INSUFFICIENT_FUNDS` result rather than creating money. The reversal has its own
+idempotency key, stored in the same transaction as the movement, and a partial unique index on
+`reversal_of` prevents an original transfer from being reversed twice. A second reversal returns
+`409`.
+
+## AI directed vs. decided
+
+AI was directed to implement the requested wallet API, Docker/Compose setup, observability,
+Swagger documentation, deployment configuration, and burst scripts. The human-directed design
+decisions were integer paise, PostgreSQL, transactional idempotency, explicit ascending wallet
+locks, consistency over availability, and Neon plus Render for the live deployment. AI helped
+type and debug the implementation; the locking, idempotency, deployment, and test decisions
+were reviewed and validated with live contention tests.
+
 ## Free-tier cost note
 
-Target: ₹0. *(Fill in once deployed — e.g. "Render free web service + Render free Postgres" or
-"Fly.io free allowance + Neon free Postgres tier".)*
+Deployment uses a Render free web service and Neon free PostgreSQL tier. Estimated cost: ₹0.
+Render free Postgres was not used because its free database has a 30-day lifetime limit.

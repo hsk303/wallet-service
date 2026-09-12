@@ -2,6 +2,7 @@ package com.paytm.wallet.controller;
 
 import com.paytm.wallet.dto.TransferRequest;
 import com.paytm.wallet.dto.TransferResponse;
+import com.paytm.wallet.dto.ReverseRequest;
 import com.paytm.wallet.service.TransferResult;
 import com.paytm.wallet.service.TransferService;
 import jakarta.validation.Valid;
@@ -30,6 +31,13 @@ public class TransferController {
     @GetMapping("/{id}")
     public ResponseEntity<TransferResponse> getById(@PathVariable UUID id) {
         TransferResult result = transferService.getById(id);
+        return ResponseEntity.ok(TransferResponse.from(result));
+    }
+
+    @PostMapping("/{id}/reverse")
+    public ResponseEntity<TransferResponse> reverse(
+            @PathVariable UUID id, @Valid @RequestBody ReverseRequest request) {
+        TransferResult result = transferService.reverse(id, request.getIdempotencyKey());
         return ResponseEntity.ok(TransferResponse.from(result));
     }
 }

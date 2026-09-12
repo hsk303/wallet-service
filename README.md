@@ -43,6 +43,11 @@ curl -X POST localhost:8080/transfers \
 
 # Check a transfer
 curl localhost:8080/transfers/<id>
+
+# Reverse/refund a completed transfer (own idempotency key)
+curl -X POST localhost:8080/transfers/<id>/reverse \
+  -H "Authorization: Bearer alice" -H "Content-Type: application/json" \
+  -d '{"idempotency_key":"reverse-key-1"}'
 ```
 
 ## Burst scripts
@@ -51,6 +56,7 @@ curl localhost:8080/transfers/<id>
 BASE_URL=http://localhost:8080 ./scripts/burst-get-or-create.sh 50
 BASE_URL=http://localhost:8080 ./scripts/burst-idempotent-retry.sh 30
 BASE_URL=http://localhost:8080 ./scripts/burst-conservation.sh 300
+BASE_URL=http://localhost:8080 ./scripts/burst-reversal.sh 2
 ```
 
 Requires `curl` and `jq`. Point `BASE_URL` at a deployed instance to reproduce the same checks
