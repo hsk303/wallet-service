@@ -8,30 +8,9 @@ services:
     dockerContext: .
     healthCheckPath: /actuator/health
     envVars:
-      - key: DB_HOST
-        fromDatabase:
-          name: wallet-db
-          property: host
-      - key: DB_PORT
-        fromDatabase:
-          name: wallet-db
-          property: port
-      - key: DB_NAME
-        fromDatabase:
-          name: wallet-db
-          property: database
       - key: DB_USER
-        fromDatabase:
-          name: wallet-db
-          property: user
+        sync: false
       - key: DB_PASSWORD
-        fromDatabase:
-          name: wallet-db
-          property: password
-
-databases:
-  - name: wallet-db
-    plan: free
-    databaseName: wallet
-    user: wallet
-    region: singapore
+        sync: false
+      - key: JDBC_DATABASE_URL
+        sync: false
