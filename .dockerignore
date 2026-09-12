@@ -1,0 +1,8 @@
+target/
+.git/
+.idea/
+*.iml
+*.log
+scripts/
+WRITEUP.md
+README.md

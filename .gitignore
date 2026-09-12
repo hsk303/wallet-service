@@ -1,0 +1,23 @@
+# Maven build output
+target/
+
+# Local JDK bundled for development
+oracleJdk-26.jdk/
+
+# IDE and editor files
+.idea/
+.vscode/
+*.iml
+
+# Operating-system files
+.DS_Store
+
+# Local environment and secrets
+.env
+.env.*
+!.env.example
+
+# Logs and local runtime data
+*.log
+.docker/
+docker-data/
